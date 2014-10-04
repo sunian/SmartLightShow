@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,44 +18,36 @@ namespace SmartLightShow.SoundProcessing {
         private SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
 
         public MicAnalysis() {
-			Console.WriteLine("Entered constructor");
+            Debug.WriteLine("Entered constructor");
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
             sampleAggregator.PerformFFT = true;
 
             // Here you decide what you want to use as the waveIn.
             // There are many options in NAudio and you can use other streams/files.
             // Note that the code varies for each different source.
-			MMDeviceEnumerator test = new MMDeviceEnumerator();
-			waveIn = new WasapiLoopbackCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
-			MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
-			foreach (MMDevice dev in all)
-			{
-				Console.WriteLine(dev);
-			}
-			Console.WriteLine("Default:");
-			Console.WriteLine(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
+            MMDeviceEnumerator test = new MMDeviceEnumerator();
+            waveIn = new WasapiLoopbackCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
+            MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
+            foreach (MMDevice dev in all) {
+                Debug.WriteLine(dev);
+            }
+            Debug.WriteLine("Default:");
+            Debug.WriteLine(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
 
             waveIn.DataAvailable += OnDataAvailable;
 
-			try
-			{
-				waveIn.StartRecording();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.StackTrace);
-				for (int i = 0; i < 1000000000; i++)
-				{
-					int j = 10;
-				}
-			}
-			Console.WriteLine("Left constructor");
+            try {
+                waveIn.StartRecording();
+            }
+            catch (Exception e) {
+                Debug.WriteLine(e.StackTrace);
+            }
+            Debug.WriteLine("Left constructor");
         }
 
-		public static void Main()
-		{
-			MicAnalysis main = new MicAnalysis();
-		}
+        public static void Main() {
+            MicAnalysis main = new MicAnalysis();
+        }
 
         void OnDataAvailable(object sender, WaveInEventArgs e) {
             //if (this.InvokeRequired) {
@@ -73,8 +66,8 @@ namespace SmartLightShow.SoundProcessing {
         }
 
         void FftCalculated(object sender, FftEventArgs e) {
-			Console.WriteLine("Received fft");
-			foreach (Complex c in e.Result) if(c.X * c.Y != 0) Console.WriteLine(c.X + " + " + c.Y + "j");
+            Debug.WriteLine("Received fft");
+            foreach (Complex c in e.Result) if (c.X * c.Y != 0) Debug.WriteLine(c.X + " + " + c.Y + "j");
         }
     }
 }
