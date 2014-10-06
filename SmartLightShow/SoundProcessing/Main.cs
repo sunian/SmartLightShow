@@ -15,7 +15,7 @@ namespace SmartLightShow.SoundProcessing {
         private static int fftLength = 8192; // NAudio fft wants powers of two!
 
         // There might be a sample aggregator in NAudio somewhere but I made a variation for my needs
-        private SampleAggregator sampleAggregator = new SampleAggregator(this.fftLength);
+        private SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
 
         public MicAnalysis() {
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
@@ -25,13 +25,13 @@ namespace SmartLightShow.SoundProcessing {
             // There are many options in NAudio and you can use other streams/files.
             // Note that the code varies for each different source.
             MMDeviceEnumerator test = new MMDeviceEnumerator();
-            this.waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
+            waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
             MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
 
-            this.waveIn.DataAvailable += OnDataAvailable;
+            waveIn.DataAvailable += OnDataAvailable;
 
             try {
-                this.waveIn.StartRecording();
+                waveIn.StartRecording();
             }
             catch (Exception e) {
                 Debug.WriteLine(e.StackTrace);
@@ -49,7 +49,7 @@ namespace SmartLightShow.SoundProcessing {
             //else {
             byte[] buffer = e.Buffer;
             int bytesRecorded = e.BytesRecorded;
-            int bufferIncrement = this.waveIn.WaveFormat.BlockAlign;
+            int bufferIncrement = waveIn.WaveFormat.BlockAlign;
 
             for (int index = 0; index < bytesRecorded; index += bufferIncrement) {
                 float sample32 = BitConverter.ToSingle(buffer, index);
