@@ -18,7 +18,6 @@ namespace SmartLightShow.SoundProcessing {
         private SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
 
         public MicAnalysis() {
-            Debug.WriteLine("Entered constructor");
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
             sampleAggregator.PerformFFT = true;
 
@@ -28,10 +27,6 @@ namespace SmartLightShow.SoundProcessing {
             MMDeviceEnumerator test = new MMDeviceEnumerator();
             waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
             MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
-            int n = 0;
-            foreach (MMDevice dev in all) {
-                Debug.WriteLine("Device " + n++ + ": " + dev);
-            }
 
             waveIn.DataAvailable += OnDataAvailable;
 
@@ -41,7 +36,6 @@ namespace SmartLightShow.SoundProcessing {
             catch (Exception e) {
                 Debug.WriteLine(e.StackTrace);
             }
-            Debug.WriteLine("Left constructor");
         }
 
         public static void Main() {
