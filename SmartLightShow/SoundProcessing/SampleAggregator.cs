@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using NAudio.Dsp;
 
+/*
+ * Code used from various NAudio demos.
+ */
+
 namespace SmartLightShow.SoundProcessing
 {
 
