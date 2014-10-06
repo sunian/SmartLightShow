@@ -26,13 +26,12 @@ namespace SmartLightShow.SoundProcessing {
             // There are many options in NAudio and you can use other streams/files.
             // Note that the code varies for each different source.
             MMDeviceEnumerator test = new MMDeviceEnumerator();
-            waveIn = new WasapiLoopbackCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
+            waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
             MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
+            int n = 0;
             foreach (MMDevice dev in all) {
-                Debug.WriteLine(dev);
+                Debug.WriteLine("Device " + n++ + ": " + dev);
             }
-            Debug.WriteLine("Default:");
-            Debug.WriteLine(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
 
             waveIn.DataAvailable += OnDataAvailable;
 
@@ -67,7 +66,12 @@ namespace SmartLightShow.SoundProcessing {
 
         void FftCalculated(object sender, FftEventArgs e) {
             Debug.WriteLine("Received fft");
-            foreach (Complex c in e.Result) if (c.X * c.Y != 0) Debug.WriteLine(c.X + " + " + c.Y + "j");
+            foreach (Complex c in e.Result) {
+                if (c.X * c.Y != 0) {
+                    Debug.WriteLine(c.X + " + " + c.Y + "j");
+                    Console.WriteLine(c.X + " + " + c.Y + "j");
+                }
+            }
         }
     }
 }
