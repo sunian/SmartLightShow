@@ -13,7 +13,7 @@ using NAudio.Dsp;
 namespace SmartLightShow.SoundProcessing
 {
 
-    class SampleAggregator
+    class Aggregator
     {
         // FFT
         public event EventHandler<FftEventArgs> FftCalculated;
@@ -26,7 +26,7 @@ namespace SmartLightShow.SoundProcessing
         private int fftLength;
         private int m;
 
-        public SampleAggregator(int fftLength)
+        public Aggregator(int fftLength)
         {
             if (!IsPowerOfTwo(fftLength))
             {

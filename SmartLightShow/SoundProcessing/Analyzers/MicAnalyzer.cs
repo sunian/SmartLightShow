@@ -13,11 +13,11 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         private static int fftLength = 8192; // NAudio fft wants powers of two!
 
         // There might be a sample aggregator in NAudio somewhere but I made a variation for my needs
-        private SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
+        private Aggregator aggregator = new Aggregator(fftLength);
 
         public MicAnalyzer() {
-            sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
-            sampleAggregator.PerformFFT = true;
+            aggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
+            aggregator.PerformFFT = true;
 
             // Here you decide what you want to use as the waveIn.
             // There are many options in NAudio and you can use other streams/files.
@@ -50,7 +50,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
             for (int index = 0; index < bytesRecorded; index += bufferIncrement) {
                 float sample32 = BitConverter.ToSingle(buffer, index);
-                sampleAggregator.Add(sample32);
+                aggregator.Add(sample32);
             }
             //}
         }
