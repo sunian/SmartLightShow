@@ -9,7 +9,9 @@ using NAudio.Dsp;
 using NAudio.CoreAudioApi;
 
 namespace SmartLightShow.SoundProcessing {
+
     class MicAnalysis {
+		static int run = 0;
         // Other inputs are also usable. Just look through the NAudio library.
         private IWaveIn waveIn;
         private static int fftLength = 8192; // NAudio fft wants powers of two!
@@ -27,6 +29,7 @@ namespace SmartLightShow.SoundProcessing {
             MMDeviceEnumerator test = new MMDeviceEnumerator();
             waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
             MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
+			Console.WriteLine("Sample Rate: " + waveIn.WaveFormat.SampleRate);
 
             waveIn.DataAvailable += OnDataAvailable;
 
@@ -59,12 +62,16 @@ namespace SmartLightShow.SoundProcessing {
         }
 
         void FftCalculated(object sender, FftEventArgs e) {
+			Console.WriteLine("Set#" + (++run));
             Debug.WriteLine("Received fft");
+			int i = 0;
+			Console.WriteLine("Result length: " + e.Result.Length);
             foreach (Complex c in e.Result) {
-                if (c.X * c.Y != 0) {
-                    Debug.WriteLine(c.X + " + " + c.Y + "j");
-                    Console.WriteLine(c.X + " + " + c.Y + "j");
-                }
+				if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.003)
+				{
+					Console.WriteLine((i.ToString()) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X*c.X+c.Y*c.Y));
+				}
+				i++;
             }
         }
     }
