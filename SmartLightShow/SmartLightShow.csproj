@@ -42,7 +42,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SoundProcessing\Main.cs" />
+    <Compile Include="SoundProcessing\Analyzers\Analyzer.cs" />
+    <Compile Include="SoundProcessing\Analyzers\FileAnalyzer.cs" />
+    <Compile Include="SoundProcessing\Runner.cs" />
+    <Compile Include="SoundProcessing\Analyzers\MicAnalyzer.cs" />
     <Compile Include="SoundProcessing\SampleAggregator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

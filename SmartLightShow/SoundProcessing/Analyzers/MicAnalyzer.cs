@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Dsp;
 using NAudio.CoreAudioApi;
+using System;
+using System.Diagnostics;
+using System.Linq;
 
-namespace SmartLightShow.SoundProcessing {
-
-    class MicAnalysis {
-		static int run = 0;
+namespace SmartLightShow.SoundProcessing.Analyzers {
+    class MicAnalyzer : Analyzer {
+        static int run = 0;
         // Other inputs are also usable. Just look through the NAudio library.
         private IWaveIn waveIn;
         private static int fftLength = 8192; // NAudio fft wants powers of two!
@@ -19,7 +15,7 @@ namespace SmartLightShow.SoundProcessing {
         // There might be a sample aggregator in NAudio somewhere but I made a variation for my needs
         private SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
 
-        public MicAnalysis() {
+        public MicAnalyzer() {
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
             sampleAggregator.PerformFFT = true;
 
@@ -27,22 +23,20 @@ namespace SmartLightShow.SoundProcessing {
             // There are many options in NAudio and you can use other streams/files.
             // Note that the code varies for each different source.
             MMDeviceEnumerator test = new MMDeviceEnumerator();
-            waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));            
+            waveIn = new WasapiCapture(test.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia));
             MMDeviceCollection all = test.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
-			Console.WriteLine("Sample Rate: " + waveIn.WaveFormat.SampleRate);
+            Console.WriteLine("Sample Rate: " + waveIn.WaveFormat.SampleRate);
 
             waveIn.DataAvailable += OnDataAvailable;
+        }
 
+        void Analyzer.RunAnalysis() {
             try {
                 waveIn.StartRecording();
             }
             catch (Exception e) {
                 Debug.WriteLine(e.StackTrace);
             }
-        }
-
-        public static void Main() {
-            MicAnalysis main = new MicAnalysis();
         }
 
         void OnDataAvailable(object sender, WaveInEventArgs e) {
@@ -62,17 +56,17 @@ namespace SmartLightShow.SoundProcessing {
         }
 
         void FftCalculated(object sender, FftEventArgs e) {
-			Console.WriteLine("Set#" + (++run));
+            Console.WriteLine("Set#" + (++run));
             Debug.WriteLine("Received fft");
-			int i = 0;
-			Console.WriteLine("Result length: " + e.Result.Length);
+            int i = 0;
+            Console.WriteLine("Result length: " + e.Result.Length);
             foreach (Complex c in e.Result) {
-				if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.003)
-				{
-					Console.WriteLine((i.ToString()) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X*c.X+c.Y*c.Y));
-				}
-				i++;
+                if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.003) {
+                    Console.WriteLine((i.ToString()) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
+                }
+                i++;
             }
         }
     }
+
 }
