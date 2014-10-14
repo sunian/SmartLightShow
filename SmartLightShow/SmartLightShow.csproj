@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="SoundProcessing\Analyzers\Analyzer.cs" />
     <Compile Include="SoundProcessing\Analyzers\FileAnalyzer.cs" />
+    <Compile Include="SoundProcessing\FFTProcessor.cs" />
     <Compile Include="SoundProcessing\Runner.cs" />
     <Compile Include="SoundProcessing\Analyzers\MicAnalyzer.cs" />
     <Compile Include="SoundProcessing\SampleAggregator.cs" />
