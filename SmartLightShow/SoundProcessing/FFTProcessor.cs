@@ -14,7 +14,7 @@ namespace SmartLightShow.SoundProcessing
 		private int sampleRate;
 		private int numBuckets;
 
-		static const double MIN_MAGNITUDE = 0.003;
+		static readonly double MIN_MAGNITUDE = 0.003;
 
 		public FFTProcessor(int min, int max, int sampleRate, int lightStreams)
 		{

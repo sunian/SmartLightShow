@@ -9,7 +9,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             this.filename = filename;
         }
 
-        void Analyzer.RunAnalysis() {
+        override public void RunAnalysis() {
             Console.WriteLine("You started file analysis on " + filename);
         }
     }

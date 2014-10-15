@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
-    interface Analyzer {
+    abstract class Analyzer {
 
-        void RunAnalysis();
+        abstract public void RunAnalysis();
 
     }
 }

@@ -30,7 +30,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             waveIn.DataAvailable += OnDataAvailable;
         }
 
-        void Analyzer.RunAnalysis() {
+        override public void RunAnalysis() {
             try {
                 waveIn.StartRecording();
             }
