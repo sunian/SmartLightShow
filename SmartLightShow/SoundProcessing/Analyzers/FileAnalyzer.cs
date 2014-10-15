@@ -5,15 +5,23 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
     class FileAnalyzer : Analyzer {
 
         private string filename;
-        private WaveChannel32 wave;
+        private WaveFileReader fileReader;
 
-        public FileAnalyzer(string filename) : base() {
-            this.filename = filename;
-            wave = new WaveChannel32(new WaveFileReader(this.filename));
+        public FileAnalyzer(WaveFileReader fileReader) : base() {
+            this.fileReader = fileReader;
         }
 
         override public void RunAnalysis() {
             Console.WriteLine("You started file analysis on " + filename);
+            int bytesRecorded = 0;
+            int bufferIncrement = 1024;
+            byte[] buffer = new byte[bufferIncrement];
+
+            do {
+                bytesRecorded = fileReader.Read(buffer, 0, bufferIncrement);
+                float sample32 = BitConverter.ToSingle(buffer, 0);
+                sampleAggregator.Add(sample32);
+            } while (bytesRecorded != 0);
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using SmartLightShow.SoundProcessing.Analyzers;
+﻿using NAudio.Wave;
+using SmartLightShow.SoundProcessing.Analyzers;
 using System;
+using System.IO;
 
 namespace SmartLightShow.SoundProcessing {
 
@@ -13,9 +15,20 @@ namespace SmartLightShow.SoundProcessing {
             }
 
             if (choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)) {
+                WaveFileReader fileReader = null;
                 Console.WriteLine("Input a filename: ");
-                String filename = Console.ReadLine();
-                RunFileAnalysis(filename);
+                while (fileReader == null) {
+                    String filename = Console.ReadLine();
+                    try {
+                        fileReader = new WaveFileReader(filename);
+                    }
+                    catch (FileNotFoundException e) {
+                        Console.WriteLine("Filename invalid. Input a filename: ");
+                        fileReader = null;
+                    }                   
+                }
+
+                RunFileAnalysis(fileReader);
             }
             else {
                 RunMicAnalysis();
@@ -28,8 +41,8 @@ namespace SmartLightShow.SoundProcessing {
             micAnalyzer.RunAnalysis();
         }
 
-        public static void RunFileAnalysis(String filename) {
-            Analyzer fileAnalyzer = new FileAnalyzer(filename);
+        public static void RunFileAnalysis(WaveFileReader fileReader) {
+            Analyzer fileAnalyzer = new FileAnalyzer(fileReader);
             fileAnalyzer.RunAnalysis();
         }
     }
