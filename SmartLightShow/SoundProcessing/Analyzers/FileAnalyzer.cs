@@ -22,6 +22,9 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
                 float sample32 = BitConverter.ToSingle(buffer, 0);
                 sampleAggregator.Add(sample32);
             } while (bytesRecorded != 0);
+
+            // Hold for now, remove this later obviously.
+            while (true) {}
         }
     }
 }

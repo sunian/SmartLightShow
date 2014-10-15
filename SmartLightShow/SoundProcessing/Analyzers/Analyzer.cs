@@ -10,12 +10,15 @@ using System.Threading.Tasks;
 namespace SmartLightShow.SoundProcessing.Analyzers {
     abstract class Analyzer {
 
-        protected static int run = 0;
-        private static int fftLength = 8192; // NAudio fft wants powers of two!
-        // There might be a sample aggregator in NAudio somewhere but I made a variation for my needs
+        protected static int runNum = 0;
+
+        // Must be a power of two.
+        private static int fftLength = 8192;
+        
+        // Variation of NAudio default sample aggregator.
         protected SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
 
-        // Default constructor, all inheriting classes should call this.
+        // Base constructor, all inheriting classes should call this.
         public Analyzer() {
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
             sampleAggregator.PerformFFT = true;
@@ -26,7 +29,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
         // Used internally to calculate an FFT.
         protected void FftCalculated(object sender, FftEventArgs e) {
-            Console.WriteLine("Set#" + (++run));
+            Console.WriteLine("Set#" + (++runNum));
             Debug.WriteLine("Received fft");
             int i = 0;
             Console.WriteLine("Result length: " + e.Result.Length);
