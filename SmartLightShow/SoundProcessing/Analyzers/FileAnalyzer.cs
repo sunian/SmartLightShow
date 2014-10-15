@@ -4,7 +4,7 @@ using System;
 namespace SmartLightShow.SoundProcessing.Analyzers {
     class FileAnalyzer : Analyzer {
 
-        private string filename;
+        // Used to read in file.
         private WaveFileReader fileReader;
 
         public FileAnalyzer(WaveFileReader fileReader) : base() {
@@ -12,7 +12,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         }
 
         override public void RunAnalysis() {
-            Console.WriteLine("You started file analysis on " + filename);
+            Console.WriteLine("You started file analysis");
             int bytesRecorded = 0;
             int bufferIncrement = 1024;
             byte[] buffer = new byte[bufferIncrement];

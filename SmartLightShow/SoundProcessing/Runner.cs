@@ -14,21 +14,7 @@ namespace SmartLightShow.SoundProcessing {
             }
 
             if (choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)) {
-                WaveFileReader fileReader = null;
-                String promptString = "Input a filename (cwd: " + System.Environment.CurrentDirectory + ")";
-                Console.WriteLine(promptString);
-                while (fileReader == null) {
-                    String filename = Console.ReadLine();
-                    try {
-                        fileReader = new WaveFileReader(filename);
-                    }
-                    catch (Exception e) {
-                        Console.WriteLine("Filename invalid. " + promptString);
-                        fileReader = null;
-                    }                   
-                }
-
-                RunFileAnalysis(fileReader);
+                RunFileAnalysis();
             }
             else {
                 RunMicAnalysis();
@@ -41,13 +27,23 @@ namespace SmartLightShow.SoundProcessing {
             micAnalyzer.RunAnalysis();
         }
 
-        public static void RunFileAnalysis(WaveFileReader fileReader) {
+        public static void RunFileAnalysis() {
+            WaveFileReader fileReader = null;
+            String promptString = "Input a filename (cwd: " + System.Environment.CurrentDirectory + ")";
+            Console.WriteLine(promptString);
+            while (fileReader == null) {
+                String filename = Console.ReadLine();
+                try {
+                    fileReader = new WaveFileReader(filename);
+                }
+                catch (Exception e) {
+                    Console.WriteLine("Filename invalid. " + promptString);
+                    fileReader = null;
+                }
+            }
+
             Analyzer fileAnalyzer = new FileAnalyzer(fileReader);
             fileAnalyzer.RunAnalysis();
         }
     }
-    // New FileAnalysis class.
-    // Create a file reader, prompt for filename.
-    // Read file with reader, get samples, add each to sample aggregator.
-    // Then it does math
 }

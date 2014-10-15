@@ -7,7 +7,8 @@ using System.Linq;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
     class MicAnalyzer : Analyzer {
-        // Specific input for this analyzer (others available in NAudio library).
+
+        // Used to read in microphone input.
         private IWaveIn waveIn;
 
         public MicAnalyzer() : base() {
