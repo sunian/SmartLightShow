@@ -1,7 +1,6 @@
 ﻿using NAudio.Wave;
 using SmartLightShow.SoundProcessing.Analyzers;
 using System;
-using System.IO;
 
 namespace SmartLightShow.SoundProcessing {
 
@@ -16,14 +15,15 @@ namespace SmartLightShow.SoundProcessing {
 
             if (choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)) {
                 WaveFileReader fileReader = null;
-                Console.WriteLine("Input a filename: ");
+                String promptString = "Input a filename (cwd: " + System.Environment.CurrentDirectory + ")";
+                Console.WriteLine(promptString);
                 while (fileReader == null) {
                     String filename = Console.ReadLine();
                     try {
                         fileReader = new WaveFileReader(filename);
                     }
-                    catch (FileNotFoundException e) {
-                        Console.WriteLine("Filename invalid. Input a filename: ");
+                    catch (Exception e) {
+                        Console.WriteLine("Filename invalid. " + promptString);
                         fileReader = null;
                     }                   
                 }
