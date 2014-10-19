@@ -6,22 +6,19 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
     class FileAnalyzer : Analyzer {
 
         // Used to read in file.
-        private WaveFileReader waveFileReader;
+        private string fileName;
 
-        public FileAnalyzer(WaveFileReader waveFileReader) : base() {
-            this.waveFileReader = waveFileReader;
+        public FileAnalyzer(String fileName) : base() {
+            this.fileName = fileName;
         }
 
         override public void RunAnalysis() {
             Console.WriteLine("You started file analysis");
-			//using (WaveFileReader reader = new WaveFileReader("myfile.wav"))
-			using(WaveFileReader reader = waveFileReader)
-			{
+			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
 				long sampleCount = reader.Length / reader.BlockAlign;
 				ISampleProvider getSamples = reader.ToSampleProvider();
 				
-				if (16 == reader.WaveFormat.BitsPerSample)
-				{
+				if (16 == reader.WaveFormat.BitsPerSample) {
 					Wave16ToFloatProvider provider = new Wave16ToFloatProvider(reader);
 					getSamples = provider.ToSampleProvider();
 				}
@@ -29,11 +26,9 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 				float[] buffer = new float[1000];
 				int offset = 0;
 				int rCount = 10;
-				do
-				{
+				do {
 					rCount = getSamples.Read(buffer, 0, 1000);
-					for (int i = 0; i < rCount; i++ )
-					{
+					for (int i = 0; i < rCount; i++ ) {
 						sampleAggregator.Add(buffer[i]);
 					}
 					offset += 1000;

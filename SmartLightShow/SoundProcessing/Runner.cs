@@ -2,6 +2,7 @@
 using SmartLightShow.SoundProcessing.Analyzers;
 using SmartLightShow.Comm;
 using System;
+using System.IO;
 using System.Text;
 
 namespace SmartLightShow.SoundProcessing {
@@ -36,21 +37,16 @@ namespace SmartLightShow.SoundProcessing {
         }
 
         public static void RunFileAnalysis() {
-            WaveFileReader fileReader = null;
+            String fileName;
             String promptString = "Input a filename (cwd: " + System.Environment.CurrentDirectory + ")";
-            Console.WriteLine(promptString);
-            while (fileReader == null) {
-                String filename = Console.ReadLine();
-                try {
-                    fileReader = new WaveFileReader(filename);
-                }
-                catch (Exception e) {
-                    Console.WriteLine("Filename invalid. " + promptString);
-                    fileReader = null;
-                }
+            while (true) {
+                Console.WriteLine(promptString);
+                fileName = Console.ReadLine();
+                if (File.Exists(fileName)) break;
+                Console.WriteLine("File does not exist.");
             }
 
-            Analyzer fileAnalyzer = new FileAnalyzer(fileReader);
+            Analyzer fileAnalyzer = new FileAnalyzer(fileName);
             fileAnalyzer.RunAnalysis();
         }
     }
