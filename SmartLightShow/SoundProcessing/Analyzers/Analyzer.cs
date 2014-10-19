@@ -34,8 +34,8 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             int i = 0;
             Console.WriteLine("Result length: " + e.Result.Length);
             foreach (Complex c in e.Result) {
-                if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.003) {
-                    Console.WriteLine((i.ToString()) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
+                if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.005) {
+                    Console.WriteLine((i * 48000 / 8192) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
                 }
                 i++;
             }
