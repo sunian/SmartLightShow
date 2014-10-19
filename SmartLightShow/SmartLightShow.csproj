@@ -42,6 +42,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comm\SerialToMSP430.cs" />
     <Compile Include="SoundProcessing\Analyzers\Analyzer.cs" />
     <Compile Include="SoundProcessing\Analyzers\FileAnalyzer.cs" />
     <Compile Include="SoundProcessing\FFTProcessor.cs" />
