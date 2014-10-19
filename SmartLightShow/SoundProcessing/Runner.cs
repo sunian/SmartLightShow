@@ -1,11 +1,20 @@
 ﻿using NAudio.Wave;
 using SmartLightShow.SoundProcessing.Analyzers;
+using SmartLightShow.Comm;
 using System;
+using System.Text;
 
 namespace SmartLightShow.SoundProcessing {
 
     public class Runner {
         public static void Main() {
+            //SerialToMSP430 serialComm = new SerialToMSP430();
+            //serialComm.open();
+            //while (true)
+            //{
+            //    string s = Console.ReadLine();
+            //    serialComm.sendByte(Encoding.Unicode.GetBytes(s));
+            //}
             String choice = "";
             while (!choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)
                     && !choice.Equals("m", StringComparison.InvariantCultureIgnoreCase)) {
