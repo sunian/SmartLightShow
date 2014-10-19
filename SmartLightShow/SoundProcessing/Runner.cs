@@ -19,7 +19,6 @@ namespace SmartLightShow.SoundProcessing {
             else {
                 RunMicAnalysis();
             }
-
         }
 
         public static void RunMicAnalysis() {
