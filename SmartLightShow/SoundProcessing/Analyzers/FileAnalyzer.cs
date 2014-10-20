@@ -15,7 +15,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             Console.WriteLine("File analysis beginning.");
 
 			using(WaveFileReader tempReader = new WaveFileReader(this.fileName)) {
-				WaveStream ws = WaveFormatConversionStream.CreatePcmStream(tempReader;
+				WaveStream ws = WaveFormatConversionStream.CreatePcmStream(tempReader);
 
 				WaveStream blockAlignedStream = new BlockAlignReductionStream(ws);
 				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);

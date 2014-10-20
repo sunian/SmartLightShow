@@ -50,7 +50,6 @@ namespace SmartLightShow.SoundProcessing {
 
 			byte[] write = new byte[2];
 			byte now = 0;
-			int count = 0;
 			for (int i = 0; i < numBuckets; i++)
 			{
 				now |= (lights[0] ? (byte)(1<<(i%8)) : (byte)0);
