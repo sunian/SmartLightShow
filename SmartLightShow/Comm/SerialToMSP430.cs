@@ -41,7 +41,7 @@ namespace SmartLightShow.Comm
             serialPort.Close();
         }
 
-        public void sendByte(byte[] b)
+        public void sendBytes(byte[] b)
         {
             byteQueue.Enqueue(b);
         }
