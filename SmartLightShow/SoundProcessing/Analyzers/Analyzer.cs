@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
     abstract class Analyzer {
-
+        // Tracks the number of the current run.
         protected static int runNum = 0;
 
         // Must be a power of two.
@@ -30,7 +30,6 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         // Used internally to calculate an FFT.
         protected void FftCalculated(object sender, FftEventArgs e) {
             Console.WriteLine("Set#" + (++runNum));
-            Debug.WriteLine("Received fft");
             int i = 0;
             Console.WriteLine("Result length: " + e.Result.Length);
             foreach (Complex c in e.Result) {

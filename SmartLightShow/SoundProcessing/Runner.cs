@@ -6,13 +6,11 @@ using System.IO;
 using System.Text;
 
 namespace SmartLightShow.SoundProcessing {
-
     public class Runner {
         public static void Main() {
             //SerialToMSP430 serialComm = new SerialToMSP430();
             //serialComm.open();
-            //while (true)
-            //{
+            //while (true) {
             //    string s = Console.ReadLine();
             //    serialComm.sendByte(Encoding.Unicode.GetBytes(s));
             //}
@@ -25,17 +23,18 @@ namespace SmartLightShow.SoundProcessing {
 
             if (choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)) {
                 RunFileAnalysis();
-            }
-            else {
+            } else {
                 RunMicAnalysis();
             }
         }
 
+        // Runs sound analysis using the microphone as input.
         public static void RunMicAnalysis() {
             Analyzer micAnalyzer = new MicAnalyzer();
             micAnalyzer.RunAnalysis();
         }
 
+        // Runs sound analysis using a WAV file as input.
         public static void RunFileAnalysis() {
             String fileName;
             String promptString = "Input a filename (cwd: " + System.Environment.CurrentDirectory + ")";

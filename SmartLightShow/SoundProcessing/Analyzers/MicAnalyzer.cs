@@ -7,7 +7,6 @@ using System.Linq;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
     class MicAnalyzer : Analyzer {
-
         // Used to read in microphone input.
         private IWaveIn waveIn;
 
@@ -40,5 +39,4 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             }
         }
     }
-
 }

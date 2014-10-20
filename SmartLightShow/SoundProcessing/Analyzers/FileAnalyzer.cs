@@ -4,8 +4,7 @@ using System.IO;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
     class FileAnalyzer : Analyzer {
-
-        // Used to read in file.
+        // Name of file to read from.
         private string fileName;
 
         public FileAnalyzer(String fileName) : base() {
@@ -13,7 +12,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         }
 
         override public void RunAnalysis() {
-            Console.WriteLine("You started file analysis");
+            Console.WriteLine("File analysis beginning.");
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
 				long sampleCount = reader.Length / reader.BlockAlign;
 				ISampleProvider getSamples = reader.ToSampleProvider();
@@ -25,14 +24,14 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
 				float[] buffer = new float[1000];
 				int offset = 0;
-				int rCount = 10;
+				int readCount = 10;
 				do {
-					rCount = getSamples.Read(buffer, 0, 1000);
-					for (int i = 0; i < rCount; i++ ) {
+                    readCount = getSamples.Read(buffer, 0, 1000);
+                    for (int i = 0; i < readCount; i++) {
 						sampleAggregator.Add(buffer[i]);
 					}
 					offset += 1000;
-				} while (rCount > 0);
+                } while (readCount > 0);
 			}
 
 			Console.WriteLine("File analysis complete.");

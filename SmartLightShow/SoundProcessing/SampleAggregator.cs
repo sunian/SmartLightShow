@@ -10,11 +10,8 @@ using NAudio.Dsp;
  * Code used from various NAudio demos.
  */
 
-namespace SmartLightShow.SoundProcessing
-{
-
-    class SampleAggregator
-    {
+namespace SmartLightShow.SoundProcessing {
+    class SampleAggregator {
         // FFT
         public event EventHandler<FftEventArgs> FftCalculated;
         public bool PerformFFT { get; set; }
@@ -26,10 +23,8 @@ namespace SmartLightShow.SoundProcessing
         private int fftLength;
         private int m;
 
-        public SampleAggregator(int fftLength)
-        {
-            if (!IsPowerOfTwo(fftLength))
-            {
+        public SampleAggregator(int fftLength) {
+            if (!IsPowerOfTwo(fftLength)) {
                 throw new ArgumentException("FFT Length must be a power of two");
             }
             this.m = (int)Math.Log(fftLength, 2.0);
@@ -38,21 +33,19 @@ namespace SmartLightShow.SoundProcessing
             this.fftArgs = new FftEventArgs(fftBuffer);
         }
 
-        bool IsPowerOfTwo(int x)
-        {
+        // Helper method.
+        bool IsPowerOfTwo(int x) {
             return (x & (x - 1)) == 0;
         }
 
-        public void Add(float value)
-        {
-            if (PerformFFT && FftCalculated != null)
-            {
+        // Adds a float to the sampleAggregator.
+        public void Add(float value) {
+            if (PerformFFT && FftCalculated != null) {
                 // Remember the window function! There are many others as well.
                 fftBuffer[fftPos].X = (float)(value * FastFourierTransform.HammingWindow(fftPos, fftLength));
                 fftBuffer[fftPos].Y = 0; // This is always zero with audio.
                 fftPos++;
-                if (fftPos >= fftLength)
-                {
+                if (fftPos >= fftLength) {
                     fftPos = 0;
                     FastFourierTransform.FFT(true, m, fftBuffer);
                     FftCalculated(this, fftArgs);
@@ -61,13 +54,15 @@ namespace SmartLightShow.SoundProcessing
         }
     }
 
-    public class FftEventArgs : EventArgs
-    {
+    // Arguments capturing information about a FFT event.
+    public class FftEventArgs : EventArgs {
         [DebuggerStepThrough]
-        public FftEventArgs(Complex[] result)
-        {
+
+        public FftEventArgs(Complex[] result) {
             this.Result = result;
         }
+        
+        // Public getter, private setter.
         public Complex[] Result { get; private set; }
     }
 }
