@@ -1,5 +1,4 @@
 ﻿using NAudio.Dsp;
-using SmartLightShow.Comm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,8 +10,8 @@ using System.Threading.Tasks;
 namespace SmartLightShow.SoundProcessing.Analyzers {
     abstract class Analyzer {
 
-        // Used to communicate with the MSP430.
-        protected SerialToMSP430 serialComm;
+        // Used to work with the calculated FFT
+		protected FFTProcessor fftProc;
 
         // Tracks the number of the current run.
         protected static int runNum = 0;
@@ -27,8 +26,6 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         public Analyzer() {
             sampleAggregator.FftCalculated += new EventHandler<FftEventArgs>(FftCalculated);
             sampleAggregator.PerformFFT = true;
-            serialComm = new SerialToMSP430();
-            serialComm.open();
         }
 
         // Used externally to run analysis on any analyzer.
@@ -45,6 +42,8 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
                 }
                 i++;
             }
+
+			fftProc.ProcessFFT(e.Result);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             MMDeviceCollection all = deviceEnumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
 
             Console.WriteLine("Sample Rate: " + waveIn.WaveFormat.SampleRate);
+			fftProc = new FFTProcessor(0, 0, waveIn.WaveFormat.SampleRate, 16);
             waveIn.DataAvailable += OnDataAvailable;
         }
 

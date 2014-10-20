@@ -13,6 +13,16 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
         override public void RunAnalysis() {
             Console.WriteLine("File analysis beginning.");
+
+			using(WaveFileReader tempReader = new WaveFileReader(this.fileName)) {
+				WaveStream ws = WaveFormatConversionStream.CreatePcmStream(tempReader;
+
+				WaveStream blockAlignedStream = new BlockAlignReductionStream(ws);
+				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);
+					
+				fftProc = new FFTProcessor(0, 0, waveChannel.WaveFormat.SampleRate, 16);
+			}
+
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
 				long sampleCount = reader.Length / reader.BlockAlign;
 				ISampleProvider getSamples = reader.ToSampleProvider();

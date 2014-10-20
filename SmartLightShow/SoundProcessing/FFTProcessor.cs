@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NAudio.Dsp;
+using SmartLightShow.Comm;
 
 namespace SmartLightShow.SoundProcessing {
 	class FFTProcessor {
@@ -11,6 +12,7 @@ namespace SmartLightShow.SoundProcessing {
 		private int maxFreq;
 		private int sampleRate;
 		private int numBuckets;
+		private SerialToMSP430 serialComm;
 
 		static readonly double MIN_MAGNITUDE = 0.003;
 
@@ -19,6 +21,9 @@ namespace SmartLightShow.SoundProcessing {
 			maxFreq = max;
 			this.sampleRate = sampleRate;
 			numBuckets = lightStreams;
+
+			serialComm = new SerialToMSP430();
+			serialComm.open();
 		}
 
 		public bool[] ProcessFFT(Complex[] fft) {
@@ -42,6 +47,21 @@ namespace SmartLightShow.SoundProcessing {
 					lights[bucket] = true;
 				}
 			}
+
+			byte[] write = new byte[2];
+			byte now = 0;
+			int count = 0;
+			for (int i = 0; i < numBuckets; i++)
+			{
+				now |= (lights[0] ? (byte)(1<<(i%8)) : (byte)0);
+				if (i % 8 == 7)
+				{
+					write[i / 8] = now;
+					now = 0;
+				}
+			}
+
+			serialComm.sendBytes(write);
 			return lights;
 		}
 	}
