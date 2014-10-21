@@ -40,9 +40,10 @@ namespace SmartLightShow.SoundProcessing {
 
 					double bucketSep = (maxFreq - minFreq) / (double)numBuckets;
 					int bucket = 1;
-					while (freq < bucket * bucketSep + minFreq) {
+					while (freq > bucket * bucketSep + minFreq && bucket < 16) {
 						bucket++;
 					}
+					Console.WriteLine(freq + " " + minFreq + " " + maxFreq + " " + bucket);
 					bucket--;
 					lights[bucket] = true;
 				}
