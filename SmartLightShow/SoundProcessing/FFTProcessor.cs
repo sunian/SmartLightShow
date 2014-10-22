@@ -29,6 +29,7 @@ namespace SmartLightShow.SoundProcessing {
 		public bool[] ProcessFFT(Complex[] fft) {
 			int fftLength = fft.Length;
 			bool[] lights = new bool[numBuckets];
+            //Console.WriteLine(string.Join(" , ", lights));
 			for (int i = 0; i < fftLength; i++) {
 				double freq = ((double) i) / fftLength * sampleRate;
 				double mag = Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y);
@@ -48,20 +49,22 @@ namespace SmartLightShow.SoundProcessing {
 					lights[bucket] = true;
 				}
 			}
-
+            //Console.WriteLine(string.Join(" , ", lights));
 			byte[] write = new byte[2];
 			byte now = 0;
 			for (int i = 0; i < numBuckets; i++)
 			{
-				now |= (lights[0] ? (byte)(1<<(i%8)) : (byte)0);
+				now |= (lights[i] ? (byte)(1<<(i%8)) : (byte)0);
 				if (i % 8 == 7)
 				{
 					write[i / 8] = now;
+                    //Console.WriteLine("now=" + now);
 					now = 0;
 				}
 			}
 
 			serialComm.sendBytes(write);
+            //Console.WriteLine(string.Join(" , ", write));
 			return lights;
 		}
 	}

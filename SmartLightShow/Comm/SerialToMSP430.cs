@@ -20,18 +20,21 @@ namespace SmartLightShow.Comm
 
         public SerialToMSP430()
         {
+            
+        }
+
+        public bool open()
+        {
             ports = System.IO.Ports.SerialPort.GetPortNames();
+            if (ports.Length == 0) return false;
             COMport = ports[selectedPort];
             serialPort = new SerialPort(COMport, 9600, Parity.None, 8, StopBits.One);
             serialThread = new Thread(new ThreadStart(serialThreadLoop));
-        }
-
-        public void open()
-        {
             byteQueue = new Queue<byte[]>();
             serialPort.Open();
             threadRunning = true;
             serialThread.Start();
+            return true;
         }
 
         public void close()
