@@ -8,6 +8,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
     class FileAnalyzer : Analyzer {
         // Name of file to read from.
         private string fileName;
+        bool playbackStarted = false;
 
         public FileAnalyzer(String fileName) : base() {
             this.fileName = fileName;
@@ -24,10 +25,12 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);
 
                 sampleRate = waveChannel.WaveFormat.SampleRate;
-				fftProc = new FFTProcessor(0, 0, sampleRate, 16);
+                Console.WriteLine("Sample rate: " + sampleRate);
+				fftProc = new FFTProcessor(400, 4000, sampleRate, 16);
 			}
 
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
+                Console.WriteLine("totaltime=" + reader.TotalTime + "   samplecount=" + reader.SampleCount + "   rate=" + (reader.SampleCount / reader.TotalTime.TotalSeconds));
 				long sampleCount = reader.Length / reader.BlockAlign;
 				ISampleProvider getSamples = reader.ToSampleProvider();
 				
@@ -60,6 +63,20 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 			Console.WriteLine("File analysis complete.");
             // Hold for now, remove this later obviously.
             while (true) {}
+        }
+
+        protected override void FftCalculated(object sender, FftEventArgs e)
+        {
+            if (!playbackStarted)
+            {
+                WaveStream mainOutputStream = new WaveFileReader(fileName);
+                WaveChannel32 volumeStream = new WaveChannel32(mainOutputStream);
+                WaveOutEvent player = new WaveOutEvent();
+                player.Init(volumeStream);
+                player.Play();
+                playbackStarted = true;
+            }
+            base.FftCalculated(sender, e);
         }
     }
 }

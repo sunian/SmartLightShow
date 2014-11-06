@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NAudio.Wave;
 
 namespace SmartLightShow.Comm
 {
@@ -17,6 +18,8 @@ namespace SmartLightShow.Comm
         public int selectedPort = 0;
         public string COMport = "COM4";
         public Queue<byte[]> byteQueue;
+        public Queue<long> timeQueue;
+        public long startTime;
 
         public SerialToMSP430()
         {
@@ -31,6 +34,7 @@ namespace SmartLightShow.Comm
             serialPort = new SerialPort(COMport, 9600, Parity.None, 8, StopBits.One);
             serialThread = new Thread(new ThreadStart(serialThreadLoop));
             byteQueue = new Queue<byte[]>();
+            timeQueue = new Queue<long>();
             serialPort.Open();
             threadRunning = true;
             serialThread.Start();
@@ -44,8 +48,14 @@ namespace SmartLightShow.Comm
             serialPort.Close();
         }
 
-        public void sendBytes(byte[] b)
+        public void startTimer()
         {
+            startTime = DateTime.UtcNow.Ticks;
+        }
+
+        public void sendBytes(byte[] b, long timestamp)
+        {
+            timeQueue.Enqueue(timestamp);
             byteQueue.Enqueue(b);
         }
 
@@ -55,8 +65,14 @@ namespace SmartLightShow.Comm
             {
                 if (byteQueue.Count > 0)
                 {
-                    byte[] data = byteQueue.Dequeue();
-                    serialPort.Write(data, 0, data.Length);
+                    long ms = DateTime.UtcNow.Ticks - startTime;
+                    long timestamp = timeQueue.Peek();
+                    if (ms >= timestamp * TimeSpan.TicksPerMillisecond)
+                    {
+                        byte[] data = byteQueue.Dequeue();
+                        serialPort.Write(data, 0, data.Length);
+                        timeQueue.Dequeue();
+                    }
                 }
             }
         }
