@@ -52,6 +52,10 @@ namespace SmartLightShow.SoundProcessing {
                 }
             }
         }
+
+        public Complex[] getFftBuffer() {
+            return fftBuffer;
+        }
     }
 
     // Arguments capturing information about a FFT event.

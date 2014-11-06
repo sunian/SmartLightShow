@@ -9,13 +9,20 @@ namespace SmartLightShow.SoundProcessing {
     // See "Beat This" beat detection algorithm for more info on what's being done here.
     class BeatDetector {
 
+        // Frequencies to use to divide our signal into six bands.
+        static int[] frequencies = new int[] { 200, 400, 800, 1600, 3200 };
+        static int numPulses = 3;   // Number of pulses in the comb filter.
+        static int minBPM = 60;     // Minimum BPM to sweep from in comb filter.
+        static int maxBPM = 240;    // Maximum BPM to sweep to in comb filter.
+        static int maxFreq = 4096;  // Maximum freuqency
+        static double winLength = 0.4;     // Window length for Hanning window function.
+
         // Take in a time-domain FFT signal, split signal into 6 bands by frequency.
         // Return the inverse FFTs of each band.
         public static List<Complex[]> Filterbank(Complex[] fft, int sampleRate) {
             // We will split up our FFT into six bands based on frequency ranges. Create bands for:
             // 0-200Hz, 200-400Hz, 400-800Hz, 800-1600Hz, 1600-3200Hz, and 3200Hz onwards.
             List<Complex[]> fftBands = new List<Complex[]>();
-            int[] frequencies = new int[]{200, 400, 800, 1600, 3200};
             int toSkip = 0;    // The number of elements we've already processed in the array.
             int toTake = 0;    // The size of the next sub-array we are going to take.
             
@@ -57,8 +64,6 @@ namespace SmartLightShow.SoundProcessing {
 
                 // Convolve signal with the right half of a Hanning window of length 0.4 seconds.
                 // In the frequency domain, just multiply.
-                double winLength = 0.4;
-                int maxFreq = 4096;
                 double hanningLength = winLength * 2 * maxFreq;
                 float hanningMultiplier = (float) (Math.Pow(Math.Cos((i + 1) * Math.PI / hanningLength / 2), 2));
 
@@ -89,13 +94,8 @@ namespace SmartLightShow.SoundProcessing {
         }
 
 
-        public static float CombFilter(List<Complex[]> fftBands) {
-            int numPulses = 3;   // Number of pulses in the comb filter.
-            int minBPM = 60;
-            int maxBPM = 240;
-            int maxFreq = 4096;
+        public static int CombFilter(List<Complex[]> fftBands) {
             float maxEnergy = -1;
-
             int bestBPM = 0;
 
             for (int i = 0; i < fftBands.Count(); ++i) {
@@ -116,7 +116,6 @@ namespace SmartLightShow.SoundProcessing {
 
                 for (int curBPM = minBPM; curBPM <= maxBPM; ++curBPM) {
                     float energy = 0;
-
                     float nstep = 120 / curBPM * maxFreq;
 
                     for (int a = 0; a < numPulses; ++a) {
@@ -138,7 +137,7 @@ namespace SmartLightShow.SoundProcessing {
                 }
             }
 
-            return maxEnergy;
+            return bestBPM;
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using NAudio.Wave;
+﻿using NAudio.Dsp;
+using NAudio.Wave;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
@@ -13,14 +15,16 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
         override public void RunAnalysis() {
             Console.WriteLine("File analysis beginning.");
+            int sampleRate = 0;
 
 			using(WaveFileReader tempReader = new WaveFileReader(this.fileName)) {
 				WaveStream ws = WaveFormatConversionStream.CreatePcmStream(tempReader);
 
 				WaveStream blockAlignedStream = new BlockAlignReductionStream(ws);
 				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);
-					
-				fftProc = new FFTProcessor(0, 0, waveChannel.WaveFormat.SampleRate, 16);
+
+                sampleRate = waveChannel.WaveFormat.SampleRate;
+				fftProc = new FFTProcessor(0, 0, sampleRate, 16);
 			}
 
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
@@ -43,6 +47,15 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 					offset += 1000;
                 } while (readCount > 0);
 			}
+
+            Complex[] fftBuffer = sampleAggregator.getFftBuffer();
+            Console.WriteLine("TESTING BEAT DETECTION!");
+            List<Complex[]> filterBanked = BeatDetector.Filterbank(fftBuffer, sampleRate);
+            BeatDetector.Smoothing(filterBanked);
+            BeatDetector.DiffRect(filterBanked);
+            int fundTempo = BeatDetector.CombFilter(filterBanked);
+            Console.WriteLine("Fundamental tempo is: " + fundTempo);
+
 
 			Console.WriteLine("File analysis complete.");
             // Hold for now, remove this later obviously.
