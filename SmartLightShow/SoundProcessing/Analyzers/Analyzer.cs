@@ -32,13 +32,13 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
         abstract public void RunAnalysis();
 
         // Used internally to calculate an FFT.
-        protected void FftCalculated(object sender, FftEventArgs e) {
+        protected virtual void FftCalculated(object sender, FftEventArgs e) {
             Console.WriteLine("Set#" + (++runNum));
             int i = 0;
             Console.WriteLine("Result length: " + e.Result.Length);
             foreach (Complex c in e.Result) {
                 if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.005) {
-                    Console.WriteLine((i * 48000 / 8192) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
+                    //Console.WriteLine((i * 48000 / 8192) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
                 }
                 i++;
             }
