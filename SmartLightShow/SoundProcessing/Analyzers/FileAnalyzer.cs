@@ -57,7 +57,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
             BeatDetector.DiffRect(processed);
             int fundTempo = BeatDetector.CombFilter(processed);
 
-			Console.WriteLine("File analysis complete.");
+			Console.WriteLine("File analysis complete. Fundamental tempo is " + fundTempo + " BPM.");
             // Hold for now, remove this later obviously.
             while (true) {}
         }
