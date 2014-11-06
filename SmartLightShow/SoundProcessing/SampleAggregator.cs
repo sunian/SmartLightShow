@@ -47,7 +47,7 @@ namespace SmartLightShow.SoundProcessing {
                 fftPos++;
                 if (fftPos >= fftLength) {
                     fftPos = 0;
-                    FastFourierTransform.FFT(true, m, fftBuffer);
+                    FastFourierTransform.FFT(true /* forward */, m, fftBuffer);
                     FftCalculated(this, fftArgs);
                 }
             }
