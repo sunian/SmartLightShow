@@ -52,13 +52,10 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 			}
 
             Complex[] fftBuffer = sampleAggregator.getFftBuffer();
-            Console.WriteLine("TESTING BEAT DETECTION!");
-            List<Complex[]> filterBanked = BeatDetector.Filterbank(fftBuffer, sampleRate);
-            BeatDetector.Smoothing(filterBanked);
-            BeatDetector.DiffRect(filterBanked);
-            int fundTempo = BeatDetector.CombFilter(filterBanked);
-            Console.WriteLine("Fundamental tempo is: " + fundTempo);
-
+            List<Complex[]> processed = BeatDetector.Filterbank(fftBuffer, sampleRate);
+            BeatDetector.Smoothing(processed);
+            BeatDetector.DiffRect(processed);
+            int fundTempo = BeatDetector.CombFilter(processed);
 
 			Console.WriteLine("File analysis complete.");
             // Hold for now, remove this later obviously.
