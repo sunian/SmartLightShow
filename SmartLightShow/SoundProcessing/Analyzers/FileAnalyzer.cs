@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
@@ -52,7 +53,10 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 			}
 
             Complex[] fftBuffer = sampleAggregator.getFftBuffer();
-            List<Complex[]> processed = BeatDetector.Filterbank(fftBuffer, sampleRate);
+
+            int sampleSize = (int)(2.2*4096*2);
+            Complex[] middleSample = fftBuffer.Skip(fftBuffer.Length - sampleSize / 2).Take(sampleSize).ToArray();
+            List<Complex[]> processed = BeatDetector.Filterbank(middleSample);
             BeatDetector.Smoothing(processed);
             BeatDetector.DiffRect(processed);
             int fundTempo = BeatDetector.CombFilter(processed);

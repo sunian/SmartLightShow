@@ -17,9 +17,9 @@ namespace SmartLightShow.SoundProcessing {
         static int maxFreq = 4096;  // Maximum freuqency
         static double winLength = 0.4;     // Window length for Hanning window function.
 
-        // Take in a time-domain FFT signal, split signal into 6 bands by frequency.
-        // Return the inverse FFTs of each band.
-        public static List<Complex[]> Filterbank(Complex[] fft, int sampleRate) {
+        // Take in a frequency-domain FFT signal, split signal into 6 bands by frequency.
+        // Return the time-domain signal of each band.
+        public static List<Complex[]> Filterbank(Complex[] fft) {
             // We will split up our FFT into six bands based on frequency ranges. Create bands for:
             // 0-200Hz, 200-400Hz, 400-800Hz, 800-1600Hz, 1600-3200Hz, and 3200Hz onwards.
             List<Complex[]> fftBands = new List<Complex[]>();
@@ -30,7 +30,7 @@ namespace SmartLightShow.SoundProcessing {
             for (int i = 0; i < frequencies.Length + 1; ++i) {
                 toSkip += toTake;
                 if (i < frequencies.Length) {
-                    toTake = frequencies[i] * fft.Length / sampleRate;
+                    toTake = frequencies[i] * fft.Length / 2 / maxFreq;
                 } else {
                     toTake = frequencies.Length - toTake;
                 }
@@ -39,7 +39,7 @@ namespace SmartLightShow.SoundProcessing {
 
             // Perform inverse FFT on each band.
             foreach (Complex[] fftBand in fftBands) {
-                FastFourierTransform.FFT(false /* forward */, (int)Math.Log(fftBand.Length), fftBand);
+                FastFourierTransform.FFT(false /* forward */, (int)Math.Log(fftBand.Length, 2.0), fftBand);
             }
 
             return fftBands;
@@ -61,21 +61,30 @@ namespace SmartLightShow.SoundProcessing {
 
                 // FFT to frequency domain.
                 if (fftBand.Length > 0) {
-                    FastFourierTransform.FFT(true /* forward */, (int)Math.Log(fftBand.Length), fftBand);
+                    FastFourierTransform.FFT(true /* forward */, (int)Math.Log(fftBand.Length, 2.0), fftBand);
                 }
 
-                // Convolve signal with the right half of a Hanning window of length 0.4 seconds.
-                // In the frequency domain, just multiply.
                 double hanningLength = winLength * 2 * maxFreq;
-                float hanningMultiplier = (float) (Math.Pow(Math.Cos((i + 1) * Math.PI / hanningLength / 2), 2));
+                Complex[] hann = new Complex[(int)(hanningLength)];
+                for (int j = 0; j < (int)(hanningLength); ++j) {
+                    Complex c = new Complex();
+                    c.X = (float)(Math.Pow(Math.Cos((j + 1) * Math.PI / hanningLength / 2), 2));
+                    c.Y = 0;
+                    hann[j] = c;
+                }
+                
+                // FFT hanning Window to frequency domain.
+                FastFourierTransform.FFT(true /* forward */, (int)Math.Log(hann.Length, 2.0), hann);
 
+                // Convolve signal with the right half of a Hanning window of length 0.4 seconds.
+                // In the frequency domain, just multiply hann with the fftBand.
                 for (int j = 0; j < fftBand.Length; ++j) {
-                    fftBand[j].X = fftBand[j].X * hanningMultiplier;
+                    fftBand[j].X = fftBand[j].X * hann[j].X;
                 }
 
                 // IFFT to time domain.
                 if (fftBand.Length > 0) {
-                    FastFourierTransform.FFT(false /* forward */, (int)Math.Log(fftBand.Length), fftBand);
+                    FastFourierTransform.FFT(false /* forward */, (int)Math.Log(fftBand.Length, 2.0), fftBand);
                 }
             }
         }
@@ -92,6 +101,10 @@ namespace SmartLightShow.SoundProcessing {
                     // Half-wave rectify band.
                     if (diff > 0) {
                         fftBand[j].X = diff;
+                        fftBand[j].Y = 0;
+                    } else {
+                        fftBand[j].X = 0;
+                        fftBand[j].Y = 0;
                     }
                 }
             }
@@ -102,46 +115,57 @@ namespace SmartLightShow.SoundProcessing {
             float maxEnergy = -1;
             int bestBPM = 0;
 
+
+            // FFT all to frequency domain.
             for (int i = 0; i < fftBands.Count; ++i) {
                 Complex[] fftBand = fftBands[i];
-                
-                // Create array to hold filtered signal, initialize to zeros.
-                Complex[] filter = new Complex[(numPulses - 1) * 2 * maxFreq + 1];
-                for (int j = 0; j < filter.Length; ++j) {
-                    Complex c = new Complex();
-                    c.X = 0;
-                    c.Y = 0;
-                    filter[j] = c;
-                    
-                }
-
-                // FFT to frequency domain.
                 if (fftBand.Length > 0) {
-                    FastFourierTransform.FFT(true /* forward */, (int)Math.Log(fftBand.Length), fftBand);
+                    FastFourierTransform.FFT(true /* forward */, (int)Math.Log(fftBand.Length, 2.0), fftBand);
+                }
+            }
+
+            // Create array to hold filtered signal, initialize to zeros.
+            Complex[] filter;
+
+            for (int curBPM = minBPM; curBPM <= maxBPM; ++curBPM) {                
+                float energy = 0;
+                float nstep = (float)(120.0 / curBPM * maxFreq);
+
+                // Clear old values.
+                //for (int j = 0; j < filter.Length; ++j) {
+                //    Complex c = new Complex();
+                //    c.X = 0;
+                //    c.Y = 0;
+                //    filter[j] = c;
+                //}
+                filter = new Complex[(numPulses - 1) * 2 * maxFreq + 1];
+
+                // Set new values.
+                for (int a = 0; a < numPulses; ++a) {
+                    filter[(int)(a * nstep)].X = 1;
                 }
 
-                for (int curBPM = minBPM; curBPM <= maxBPM; ++curBPM) {
-                    float energy = 0;
-                    float nstep = 120 / curBPM * maxFreq;
+                // FFT filter into frequency domain.
+                if (filter.Length > 0) {
+                    FastFourierTransform.FFT(true /* forward */, (int)Math.Log(filter.Length, 2.0), filter);
+                }
 
-                    for (int a = 0; a < numPulses; ++a) {
-                        filter[(int)(a * nstep)].X = 1;
-                    }
-
-                    // FFT filter into frequency domain.
-                    if (filter.Length > 0) {
-                        FastFourierTransform.FFT(true /* forward */, (int)Math.Log(filter.Length), filter);
-                    }
+                for (int i = 0; i < fftBands.Count; ++i) {
+                    Complex[] fftBand = fftBands[i];
 
                     // Calculate energy after convolution
                     for (int j = 0; j < fftBand.Length; ++j) {
-                        energy += (float) (Math.Pow(Math.Abs(filter[j].X * fftBand[j].X), 2));
+                        for (int k = 0; k < filter.Length; ++k) {
+                            energy += (filter[k].X * fftBand[j].X) * (filter[k].X * fftBand[j].X);
+                        }
                     }
+                }
 
-                    if (energy > maxEnergy) {
-                        maxEnergy = energy;
-                        bestBPM = curBPM;
-                    }
+                Console.WriteLine("Checking " + curBPM + " BPM. energy is: " + energy + " and maxEnergy is: " + maxEnergy);
+                if (energy > maxEnergy) {
+                    Console.WriteLine("Setting new best BPM to: " + curBPM);
+                    maxEnergy = energy;
+                    bestBPM = curBPM;
                 }
             }
 

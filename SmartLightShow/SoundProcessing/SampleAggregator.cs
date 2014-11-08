@@ -16,7 +16,7 @@ namespace SmartLightShow.SoundProcessing {
         public event EventHandler<FftEventArgs> FftCalculated;
         public bool PerformFFT { get; set; }
 
-        // This Complex is NAudio's own! 
+        // This fftBuffer is in frequency domain.
         private Complex[] fftBuffer;
         private FftEventArgs fftArgs;
         private int fftPos;
