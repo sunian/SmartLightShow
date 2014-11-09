@@ -1,5 +1,8 @@
-﻿using NAudio.Wave;
+﻿using NAudio.Dsp;
+using NAudio.Wave;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 namespace SmartLightShow.SoundProcessing.Analyzers {
@@ -14,6 +17,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 
         override public void RunAnalysis() {
             Console.WriteLine("File analysis beginning.");
+            int sampleRate = 0;
 
 			using(WaveFileReader tempReader = new WaveFileReader(this.fileName)) {
 				WaveStream ws = WaveFormatConversionStream.CreatePcmStream(tempReader);
@@ -21,8 +25,9 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 				WaveStream blockAlignedStream = new BlockAlignReductionStream(ws);
 				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);
 
-                Console.WriteLine("asdf:  " + waveChannel.WaveFormat.SampleRate);
-				fftProc = new FFTProcessor(400, 1500, waveChannel.WaveFormat.SampleRate, 16);
+                sampleRate = waveChannel.WaveFormat.SampleRate;
+                Console.WriteLine("Sample rate: " + sampleRate);
+				fftProc = new FFTProcessor(400, 4000, sampleRate, 16);
 			}
 
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
@@ -47,7 +52,16 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
                 } while (readCount > 0);
 			}
 
-			Console.WriteLine("File analysis complete.");
+            Complex[] fftBuffer = sampleAggregator.getFftBuffer();
+
+            int sampleSize = (int)(2.2*4096*2);
+            Complex[] middleSample = fftBuffer.Skip(fftBuffer.Length - sampleSize / 2).Take(sampleSize).ToArray();
+            List<Complex[]> processed = BeatDetector.Filterbank(middleSample);
+            BeatDetector.Smoothing(processed);
+            BeatDetector.DiffRect(processed);
+            int fundTempo = BeatDetector.CombFilter(processed);
+
+			Console.WriteLine("File analysis complete. Fundamental tempo is " + fundTempo + " BPM.");
             // Hold for now, remove this later obviously.
             while (true) {}
         }
