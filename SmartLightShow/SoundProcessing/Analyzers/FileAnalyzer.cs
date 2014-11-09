@@ -22,7 +22,7 @@ namespace SmartLightShow.SoundProcessing.Analyzers {
 				WaveChannel32 waveChannel = new WaveChannel32(blockAlignedStream);
 
                 Console.WriteLine("asdf:  " + waveChannel.WaveFormat.SampleRate);
-				fftProc = new FFTProcessor(400, 4000, waveChannel.WaveFormat.SampleRate, 16);
+				fftProc = new FFTProcessor(400, 1500, waveChannel.WaveFormat.SampleRate, 16);
 			}
 
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
