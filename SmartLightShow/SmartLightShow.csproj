@@ -43,15 +43,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Comm\SerialToMSP430.cs" />
-    <Compile Include="SoundProcessing\Analyzers\Analyzer.cs" />
-    <Compile Include="SoundProcessing\Analyzers\FileAnalyzer.cs" />
-    <Compile Include="SoundProcessing\BeatDetector.cs" />
-    <Compile Include="SoundProcessing\FFTProcessorFollowMelody.cs" />
-    <Compile Include="SoundProcessing\FFTProcessor.cs" />
-    <Compile Include="SoundProcessing\Runner.cs" />
-    <Compile Include="SoundProcessing\Analyzers\MicAnalyzer.cs" />
+    <Compile Include="InputHandling\Analyzer.cs" />
+    <Compile Include="InputHandling\FileAnalyzer.cs" />
+    <Compile Include="FrequencyAnalysis\BeatDetector.cs" />
+    <Compile Include="FrequencyAnalysis\FFTProcessorFollowMelody.cs" />
+    <Compile Include="FrequencyAnalysis\FFTProcessor.cs" />
+    <Compile Include="Runner.cs" />
+    <Compile Include="InputHandling\MicAnalyzer.cs" />
     <Compile Include="SoundProcessing\SampleAggregator.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
