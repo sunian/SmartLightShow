@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NAudio.Dsp;
 
-namespace SmartLightShow.SoundProcessing {
+namespace SmartLightShow.FrequencyAnalysis {
     // See "Beat This" beat detection algorithm for more info on what's being done here.
     class BeatDetector {
 

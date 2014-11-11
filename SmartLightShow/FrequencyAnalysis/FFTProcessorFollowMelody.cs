@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NAudio.Dsp;
-using SmartLightShow.Comm;
+using SmartLightShow.Communication;
 
-namespace SmartLightShow.SoundProcessing {
+namespace SmartLightShow.FrequencyAnalysis {
 	class FFTProcessorFollowMelody {
 		private double minFreq;
 		private double maxFreq;

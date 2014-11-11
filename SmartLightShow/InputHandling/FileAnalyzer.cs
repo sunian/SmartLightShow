@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using SmartLightShow.FrequencyAnalysis;
+using SmartLightShow.SoundProcessing;
 
-namespace SmartLightShow.SoundProcessing.Analyzers {
+namespace SmartLightShow.InputHandling {
     class FileAnalyzer : Analyzer {
         // Name of file to read from.
         private string fileName;

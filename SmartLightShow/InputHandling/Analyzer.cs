@@ -5,9 +5,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SmartLightShow.FrequencyAnalysis;
+using SmartLightShow.SoundProcessing;
 
 
-namespace SmartLightShow.SoundProcessing.Analyzers {
+namespace SmartLightShow.InputHandling {
     abstract class Analyzer {
 
         // Used to work with the calculated FFT

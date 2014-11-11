@@ -4,8 +4,9 @@ using NAudio.CoreAudioApi;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using SmartLightShow.FrequencyAnalysis;
 
-namespace SmartLightShow.SoundProcessing.Analyzers {
+namespace SmartLightShow.InputHandling {
     class MicAnalyzer : Analyzer {
         // Used to read in microphone input.
         private IWaveIn waveIn;

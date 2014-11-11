@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
-namespace SmartLightShow.Comm
+namespace SmartLightShow.Communication
 {
     class SerialToMSP430
     {

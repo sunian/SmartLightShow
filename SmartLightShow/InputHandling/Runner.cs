@@ -1,11 +1,9 @@
 ﻿using NAudio.Wave;
-using SmartLightShow.SoundProcessing.Analyzers;
-using SmartLightShow.Comm;
 using System;
 using System.IO;
 using System.Text;
 
-namespace SmartLightShow.SoundProcessing {
+namespace SmartLightShow.InputHandling {
     public class Runner {
         public static void Main() {
             String choice = "";
