@@ -11,6 +11,8 @@ namespace SmartLightShow.Communication
 {
     class SerialToMSP430
     {
+        public static SerialToMSP430 staticInstance = new SerialToMSP430();
+
         SerialPort serialPort;
         Thread serialThread; 
         bool threadRunning;

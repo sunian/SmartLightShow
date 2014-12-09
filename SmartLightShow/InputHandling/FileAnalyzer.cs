@@ -29,7 +29,8 @@ namespace SmartLightShow.InputHandling {
 
                 sampleRate = waveChannel.WaveFormat.SampleRate;
                 Console.WriteLine("Sample rate: " + sampleRate);
-				fftProc = new FFTProcessor(400, 4000, sampleRate, 16);
+                //fftProc = new FFTProcessorFollowMelody(50, 260, 800, sampleRate, 16);
+                fftProc = new FFTProcessor(30, 800, sampleRate, 16);
 			}
 
 			using(WaveFileReader reader = new WaveFileReader(this.fileName)) {
@@ -46,7 +47,7 @@ namespace SmartLightShow.InputHandling {
 				int offset = 0;
 				int readCount = 10;
 				do {
-                    readCount = getSamples.Read(buffer, 0, 1000);
+                    readCount = getSamples.Read(buffer, 0, buffer.Length);
                     for (int i = 0; i < readCount; i++) {
 						sampleAggregator.Add(buffer[i]);
 					}
@@ -61,15 +62,16 @@ namespace SmartLightShow.InputHandling {
             List<Complex[]> processed = BeatDetector.Filterbank(middleSample);
             BeatDetector.Smoothing(processed);
             BeatDetector.DiffRect(processed);
-            int fundTempo = BeatDetector.CombFilter(processed);
+            //int fundTempo = BeatDetector.CombFilter(processed);
 
-			Console.WriteLine("File analysis complete. Fundamental tempo is " + fundTempo + " BPM.");
+            //Console.WriteLine("File analysis complete. Fundamental tempo is " + fundTempo + " BPM.");
             // Hold for now, remove this later obviously.
-            while (true) {}
+            //while (true) {}
         }
 
         protected override void FftCalculated(object sender, FftEventArgs e)
         {
+            base.FftCalculated(sender, e);
             if (!playbackStarted)
             {
                 WaveStream mainOutputStream = new WaveFileReader(fileName);
@@ -79,7 +81,6 @@ namespace SmartLightShow.InputHandling {
                 player.Play();
                 playbackStarted = true;
             }
-            base.FftCalculated(sender, e);
         }
     }
 }

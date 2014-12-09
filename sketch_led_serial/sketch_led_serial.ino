@@ -1,4 +1,4 @@
-int pins[] = {P1_2, P1_3, P1_4, P1_5,     P2_0, P1_0, P2_4, P2_5,       P2_1, P2_2, P1_6, P1_7, P2_3
+int pins[] = {P1_2, P1_3, P1_4, P1_5,     P2_0, P1_0, P2_4, P2_5,       P2_1, P2_2, P1_6, P2_3
 };
 int i = 0;
 void setup()
@@ -45,8 +45,8 @@ void setup()
 //  }
   Serial.begin(9600);
   for (i = 0; i < (sizeof(pins)/sizeof(int)); i++){
-    delay(300);
-    digitalWrite(pins[i], LOW);
+//    delay(300);
+//    digitalWrite(pins[i], LOW);
   }
 }
 

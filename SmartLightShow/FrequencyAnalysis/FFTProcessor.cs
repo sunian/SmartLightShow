@@ -8,13 +8,13 @@ using SmartLightShow.Communication;
 
 namespace SmartLightShow.FrequencyAnalysis {
 	class FFTProcessor {
-		private int minFreq;
-		private int maxFreq;
-		private long sampleRate;
-		private int numBuckets;
-		private SerialToMSP430 serialComm;
-        private long fftCount;
-        private double[] pastMag1, pastMag2, pastMag3;
+		protected double minFreq;
+        protected double maxFreq;
+        protected long sampleRate;
+        protected int numBuckets;
+        protected long fftCount;
+        protected double[] pastMag1, pastMag2, pastMag3;
+        protected double[] peakMags;
 
 		static readonly double MIN_MAGNITUDE = 0.0035;
 
@@ -25,12 +25,10 @@ namespace SmartLightShow.FrequencyAnalysis {
 			numBuckets = lightStreams;
             fftCount = 0;
 			
-            serialComm = new SerialToMSP430();
-			serialComm.open();
 		}
 
-		public bool[] ProcessFFT(Complex[] fft) {
-            if (fftCount == 0) serialComm.startTimer();
+		public virtual bool[] ProcessFFT(Complex[] fft) {
+            if (fftCount == 0) SerialToMSP430.staticInstance.startTimer();
             
 			long fftLength = fft.Length;
             Console.WriteLine("fftlength = " + fftLength);
@@ -39,20 +37,24 @@ namespace SmartLightShow.FrequencyAnalysis {
             if (pastMag1 == null) pastMag1 = mags;
             if (pastMag2 == null) pastMag2 = pastMag1;
             if (pastMag3 == null) pastMag3 = pastMag2;
+            if (peakMags == null) peakMags = mags;
+            int lastBucket = -1; double maxMag = -1000;
             //Console.WriteLine(string.Join(" , ", lights));
 			for (int i = 0; i < fftLength; i++) {
 				double freq = ((double) i) / fftLength * sampleRate;
-                if (freq > 4000) break;
+                if (freq > 800) break;
 				double mag = Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y);
 				double phase = Math.Tan(fft[i].Y / fft[i].X);
                 mags[i] = mag;
+                int bucket = 0;
+                bool showLight = false;
 				if (mag > MIN_MAGNITUDE) {
-					minFreq = (int) Math.Max(Math.Min(minFreq, freq), 42);
-					maxFreq = (int) Math.Max(maxFreq, freq);
+					minFreq = Math.Max(Math.Min(minFreq, freq), 42);
+					maxFreq = Math.Max(maxFreq, freq);
                     if (freq < minFreq) freq = minFreq;
 
                     double bucketStep = Math.Log(maxFreq / minFreq, 2) / numBuckets;
-                    int bucket = (int) (Math.Log(freq / minFreq, 2) / bucketStep);
+                    bucket = (int) (Math.Log(freq / minFreq, 2) / bucketStep);
                     if (bucket > 15) bucket = 15;
                     //double currentMin = (minFreq + maxFreq) / 2.0;
                     //while (freq < currentMin && bucket > 0) {
@@ -62,10 +64,43 @@ namespace SmartLightShow.FrequencyAnalysis {
                     //}
                     //double cent = 1200 * (Math.Log(freq / 13.75, 2) - 0.25);
 					Console.WriteLine(freq + " " + minFreq + " " + maxFreq + " " + bucket + " mag=" + (Math.Log(mag, 10) + 5));
-                    if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 1.0) 
-					    lights[bucket] = true;  
+                    if (peakMags[i] == 0)
+                    {
+                        if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 1.0)
+                        {
+					        showLight = true;
+                            peakMags[i] = mag;
+                        }
+                    }
+                    else
+                    {
+                        if (mag >= peakMags[i] * 0.6)
+                        {
+                            showLight = true;
+                            if (mag > peakMags[i]) peakMags[i] = mag;
+                        }
+                        else
+                        {
+                            peakMags[i] = 0;
+                        }
+                    }
+                }
+                if (showLight)
+                {
+                    if (mag > maxMag)
+                    {
+                        lastBucket = bucket;
+                        maxMag = mag;
+                    }
+                }
+                else
+                {
+                    if (lastBucket >= 0) lights[lastBucket] = true;
+                    lastBucket = -1;
+                    maxMag = -1000;
                 }
 			}
+            if (lastBucket >= 0) lights[lastBucket] = true;
             //Console.WriteLine(string.Join(" , ", lights));
 			byte[] write = new byte[2];
 			byte now = 0;
@@ -80,7 +115,7 @@ namespace SmartLightShow.FrequencyAnalysis {
 				}
 			}
             Console.WriteLine("offset=" + fftCount * fftLength * 500L / sampleRate);
-			serialComm.sendBytes(write, fftCount * fftLength * 500L / sampleRate);
+			SerialToMSP430.staticInstance.sendBytes(write, fftCount * fftLength * 500L / sampleRate);
             fftCount++;
             //Console.WriteLine(string.Join(" , ", write));
             pastMag3 = pastMag2;

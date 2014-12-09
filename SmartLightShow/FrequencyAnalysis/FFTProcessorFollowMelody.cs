@@ -7,36 +7,31 @@ using NAudio.Dsp;
 using SmartLightShow.Communication;
 
 namespace SmartLightShow.FrequencyAnalysis {
-	class FFTProcessorFollowMelody {
-		private double minFreq;
-		private double maxFreq;
-        private double maxMag = MIN_MAGNITUDE;
-		private long sampleRate;
-		private int numBuckets;
-		private SerialToMSP430 serialComm;
-        private long fftCount;
-        private double[] pastMag1, pastMag2, pastMag3;
+	class FFTProcessorFollowMelody : FFTProcessor {
+        protected double maxMag;
+        protected double maxTreble, minTreble, maxBass, minBass, maxSoprano, minSoprano;
         private List<double[]> fftSort;
+        private double[][] rangeMappings = new double[][] { new double[]{5.999,10}, new double[]{7.999,0}, new double[]{1.999,8} };
 
-		static readonly double MIN_MAGNITUDE = 0.0035;
+		static readonly double MIN_MAGNITUDE = -36;
 
-        public FFTProcessorFollowMelody(int min, int max, int sampleRate, int lightStreams)
+        public FFTProcessorFollowMelody(int min, int mid, int max, int sampleRate, int lightStreams)
+            : base(min, max, sampleRate, lightStreams)
         {
-			minFreq = min;
-			maxFreq = max;
-			this.sampleRate = sampleRate;
-			numBuckets = lightStreams;
-            fftCount = 0;
-			
-            serialComm = new SerialToMSP430();
-			serialComm.open();
-		}
+            maxSoprano  = max * 1.2;
+            minSoprano  = max / 1.2;
+            maxTreble   = mid * 1.2;
+            minTreble   = mid / 1.6;
+            maxBass     = min * 1.0;
+            minBass     = min / 1.2;
+        }
 
-		public bool[] ProcessFFT(Complex[] fft) {
-            if (fftCount == 0) serialComm.startTimer();
+		public override bool[] ProcessFFT(Complex[] fft) {
+            if (fftCount == 0) SerialToMSP430.staticInstance.startTimer();
 			long fftLength = fft.Length;
             fftSort = new List<double[]>();
-            Console.WriteLine("fftlength = " + fftLength);
+            HashSet<int> freqs = new HashSet<int>();
+            //Console.WriteLine("fftlength = " + fftLength);
 			bool[] lights = new bool[numBuckets];
             double[] mags = new double[fftLength];
             if (pastMag1 == null) pastMag1 = mags;
@@ -46,63 +41,123 @@ namespace SmartLightShow.FrequencyAnalysis {
             {
                 double[] newFFT = new double[] {
                     ((double) i) / fftLength * sampleRate,//freq
-                    Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y),//mag
-                    Math.Tan(fft[i].Y / fft[i].X)//phase
+                    20 * Math.Log10(Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y)),//mag
+                    Math.Tan(fft[i].Y / fft[i].X),//phase
+                    i
                 };
                 if (newFFT[0] > 4000) break;
-                fftSort.Add(newFFT);
+                if (newFFT[1] > MIN_MAGNITUDE)
+                {
+                    fftSort.Add(newFFT);
+                    freqs.Add(i);
+                }
             }
             fftSort.Sort((a, b) => Math.Sign(b[1] - a[1]) );
-            for (int i = 0; i >= 0; i--)
+            if (fftSort.Count > 0)
             {
-                if (fftSort[i][1] / maxMag >= 0.34)
+                double keyIndex = 0;
+                for (int i = 0; i < Math.Min(8, fftSort.Count); i++)
                 {
-                    maxMag = fftSort[i][1];
+                    freqs.Add((int)fftSort[i][1]);
+                    if (freqs.Contains((int)fftSort[i][1] - 1) || freqs.Contains((int)fftSort[i][1] + 1))
+                    {
+                        fftSort[i][1] = MIN_MAGNITUDE - 1;
+                        continue;
+                    }
+                    
                     double freq = fftSort[i][0];
-                    Console.Write("freq = " + freq + "  ");
-                    if (freq > maxFreq)
+                    double mag = fftSort[i][1];
+                    if (mag < -30 && i > 0 && mag < fftSort[i - 1][1] - 2.5) break;
+                    if (freq / minTreble > maxBass / freq)
                     {
-                        maxFreq = freq;
-                        minFreq = freq / 2;
+                        if (freq / minSoprano > maxTreble / freq)
+                        {
+                            minSoprano = Math.Min(minSoprano, freq);
+                            maxSoprano = Math.Max(maxSoprano, freq);
+                        }
+                        else
+                        {
+                            minTreble = Math.Min(minTreble, freq);
+                            maxTreble = Math.Max(maxTreble, freq);
+                        }
                     }
-                    else if (freq < minFreq && freq >= minFreq / 4)
+                    else
                     {
-                        minFreq = freq;
-                        maxFreq = freq * 2;
+                        minBass = Math.Min(minBass, freq);
+                        maxBass = Math.Max(maxBass, freq);
                     }
-                }
-                else
-                {
-                    maxMag *= 0.7;
-                }
-            }
-            Console.WriteLine("maxMag = " + maxMag);
-			for (int i = 0; i < Math.Min(fftSort.Count, 3); i++) {
-				double freq = fftSort[i][0];
-                //if (freq > 4000) break;
-                double mag = fftSort[i][1];
-				double phase = fftSort[i][2];
-                mags[i] = mag;
-				if (mag > MIN_MAGNITUDE) {
-                    //minFreq = Math.Max(Math.Min(minFreq, freq), 42);
-                    //maxFreq = Math.Max(maxFreq, freq);
-                    if (freq < minFreq || freq > maxFreq) continue;
-
-                    double bucketStep = Math.Log(maxFreq / minFreq, 2) / 8;
-                    int bucket = 8 + (int) (Math.Log(freq / minFreq, 2) / bucketStep);
-                    if (bucket > 15) bucket = 15;
-                    //double currentMin = (minFreq + maxFreq) / 2.0;
-                    //while (freq < currentMin && bucket > 0) {
-                    //    Console.WriteLine("min=" + currentMin);
-                    //    bucket--;
-                    //    currentMin = (currentMin + minFreq) / 2.0;
+                    //if (fftSort[i][1] / maxMag >= 0.34)
+                    //{
+                    //    maxMag = fftSort[i][1];
+                    //    //Console.Write("freq = " + freq + "  ");
+                    //    if (freq > maxFreq)
+                    //    {
+                    //        maxFreq = freq;
+                    //        minFreq = freq / 2;
+                    //    }
+                    //    else if (freq < minFreq && freq >= minFreq / 4)
+                    //    {
+                    //        minFreq = freq;
+                    //        maxFreq = freq * 2;
+                    //    }
                     //}
-                    //double cent = 1200 * (Math.Log(freq / 13.75, 2) - 0.25);
-					Console.WriteLine(freq + " " + minFreq + " " + maxFreq + " " + bucket + " mag=" + mag);
-                    //if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 1.0) 
-					    lights[bucket] = true;  
+                    //else
+                    //{
+                    //    maxMag *= 0.7;
+                    //}
                 }
-			}
+                fftSort.Sort((a, b) => Math.Sign(b[1] - a[1]));
+                maxMag = fftSort[0][1];
+                List<double[]> ranges = new List<double[]>();
+                ranges.Add(new double[]{0, minBass, maxBass});
+                ranges.Add(new double[]{1, minTreble, maxTreble});
+                ranges.Add(new double[]{2, minSoprano, maxSoprano});
+                ranges.Sort((a, b) => Math.Sign(b[0] * 1.8 + b[2]/b[1] - a[2]/a[1] - a[0] * 1.8));
+                for (int i = 0; i < ranges.Count; i++)
+                {
+                    Console.Write(ranges[i][0] + ": " + (int)ranges[i][1] + "," + (int)ranges[i][2] + "\t");
+                }
+                Console.WriteLine();
+                //TODO determine light mapping for ranges
+                //Console.WriteLine("\t\tmaxMag = " + maxMag);
+                for (int i = 0; i < Math.Min(fftSort.Count, 16); i++)
+                {
+                    double freq = fftSort[i][0];
+                    double mag = fftSort[i][1];
+                    double phase = fftSort[i][2];
+                    mags[i] = mag;
+                    if (mag < MIN_MAGNITUDE) break;
+                    if (mag < -30 && i > 0 && mag < fftSort[i - 1][1] - 2.5) break;
+                    //if (freq < minFreq || freq > maxFreq) continue;
+                    int bucket = 0;
+                    double bucketStep;
+                    bool inRange = false;
+                    for (int r = 0; r < ranges.Count; r++)
+                    {
+                        if (freq >= ranges[r][1] && freq <= ranges[r][2])
+                        {
+                            inRange = true;
+                            bucketStep = Math.Log(ranges[r][2] / ranges[r][1], 2) / rangeMappings[r][0];
+                            bucket = (int)(Math.Log(freq / ranges[r][1], 2) / bucketStep);
+                            bucket += (int)rangeMappings[r][1];
+                            break;
+                        }
+                    }
+                    if (!inRange) continue;
+                    if (bucket < 0) bucket = 0;
+                    if (bucket > 15) bucket = 15;
+                    Console.WriteLine(fftSort[i][3] + "\t\t" + (int)freq + "\t" + "\t" + bucket + "\t\tmag=" + (int)mag);
+                    //if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 1.0) 
+                    lights[bucket] = true;
+                }
+                maxSoprano = (10 * maxSoprano + 0.1 * minSoprano) / 10.1;
+                minSoprano = (10 * minSoprano + 0.1 * maxSoprano) / 10.1;
+                maxTreble = (10 * maxTreble + 0.1 * minTreble) / 10.1;
+                minTreble = (10 * minTreble + 0.1 * maxTreble) / 10.1;
+                maxBass = (10 * maxBass + 0.1 * minBass) / 10.1;
+                minBass = (10 * minBass + 0.1 * maxBass) / 10.1;
+            }
+            
             //Console.WriteLine(string.Join(" , ", lights));
 			byte[] write = new byte[2];
 			byte now = 0;
@@ -116,8 +171,8 @@ namespace SmartLightShow.FrequencyAnalysis {
 					now = 0;
 				}
 			}
-            //Console.WriteLine("offset=" + fftCount * fftLength * 500L / sampleRate);
-			serialComm.sendBytes(write, fftCount * fftLength * 500L / sampleRate);
+            Console.WriteLine("offset=" + fftCount * fftLength * 500L / sampleRate);
+			SerialToMSP430.staticInstance.sendBytes(write, fftCount * fftLength * 500L / sampleRate);
             fftCount++;
             //Console.WriteLine(string.Join(" , ", write));
             pastMag3 = pastMag2;

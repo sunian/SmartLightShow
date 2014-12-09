@@ -19,7 +19,7 @@ namespace SmartLightShow.InputHandling {
         protected static int runNum = 0;
 
         // Must be a power of two.
-        private static int fftLength = 8192;
+        private static int fftLength = 2048 * 2;
         
         // Variation of NAudio default sample aggregator.
         protected SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
@@ -35,15 +35,16 @@ namespace SmartLightShow.InputHandling {
 
         // Used internally to calculate an FFT.
         protected virtual void FftCalculated(object sender, FftEventArgs e) {
-            Console.WriteLine("Set#" + (++runNum));
-            int i = 0;
-            Console.WriteLine("Result length: " + e.Result.Length);
-            foreach (Complex c in e.Result) {
-                if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.005) {
-                    //Console.WriteLine((i * 48000 / 8192) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
-                }
-                i++;
-            }
+            Console.WriteLine();
+            //Console.WriteLine("Set#" + (++runNum));
+            //int i = 0;
+            //Console.WriteLine("Result length: " + e.Result.Length);
+            //foreach (Complex c in e.Result) {
+            //    if (Math.Sqrt(c.X * c.X + c.Y * c.Y) > 0.005) {
+            //        //Console.WriteLine((i * 48000 / 8192) + "\tX:\t" + c.X + "\tY:\t" + c.Y + "\tMag:\t" + Math.Sqrt(c.X * c.X + c.Y * c.Y));
+            //    }
+            //    i++;
+            //}
 
 			fftProc.ProcessFFT(e.Result);
         }

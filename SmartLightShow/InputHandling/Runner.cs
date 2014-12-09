@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text;
+using SmartLightShow.Communication;
 
 namespace SmartLightShow.InputHandling {
     public class Runner {
@@ -12,12 +13,13 @@ namespace SmartLightShow.InputHandling {
                 Console.WriteLine("Do you want (f)ile- or (m)icrophone-based analysis?");
                 choice = Console.ReadLine();
             }
-
+            SerialToMSP430.staticInstance.open();
             if (choice.Equals("f", StringComparison.InvariantCultureIgnoreCase)) {
                 RunFileAnalysis();
             } else {
                 RunMicAnalysis();
             }
+            SerialToMSP430.staticInstance.close();
         }
 
         // Runs sound analysis using the microphone as input.
@@ -36,9 +38,13 @@ namespace SmartLightShow.InputHandling {
                 if (File.Exists(fileName)) break;
                 Console.WriteLine("File does not exist.");
             }
-
-            Analyzer fileAnalyzer = new FileAnalyzer(fileName);
-            fileAnalyzer.RunAnalysis();
+            while (true)
+            {
+                Analyzer fileAnalyzer = new FileAnalyzer(fileName);
+                fileAnalyzer.RunAnalysis();
+                String choice = Console.ReadLine();
+                if (choice.Length > 0) break;
+            }
         }
     }
 }
