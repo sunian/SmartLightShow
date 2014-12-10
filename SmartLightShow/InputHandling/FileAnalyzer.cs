@@ -1,6 +1,7 @@
 ﻿using NAudio.Dsp;
 using NAudio.Wave;
 using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -74,7 +75,16 @@ namespace SmartLightShow.InputHandling {
             base.FftCalculated(sender, e);
             if (!playbackStarted)
             {
-                WaveStream mainOutputStream = new WaveFileReader(fileName);
+                WaveStream mainOutputStream = null;
+                if (fileName.IndexOf('/') >= 0)
+                {
+                    mainOutputStream = new WaveFileReader(fileName.Substring(0, fileName.IndexOf('/') + 1) + "orig.wav");
+                }
+                else
+                {
+                    mainOutputStream = new WaveFileReader(fileName);
+                }
+                
                 WaveChannel32 volumeStream = new WaveChannel32(mainOutputStream);
                 WaveOutEvent player = new WaveOutEvent();
                 player.Init(volumeStream);

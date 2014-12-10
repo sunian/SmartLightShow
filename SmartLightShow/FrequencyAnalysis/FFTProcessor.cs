@@ -16,7 +16,11 @@ namespace SmartLightShow.FrequencyAnalysis {
         protected double[] pastMag1, pastMag2, pastMag3;
         protected double[] peakMags;
 
-		static readonly double MIN_MAGNITUDE = 0.0035;
+        //double MIN_MAGNITUDE = -36;
+        double MIN_MAGNITUDE = -20.5;
+
+        static readonly double BASS_HIGH = 150;
+        double MIN_BASS_MAGNITUDE = -24;
 
 		public FFTProcessor(int min, int max, int sampleRate, int lightStreams) {
 			minFreq = min;
@@ -44,11 +48,20 @@ namespace SmartLightShow.FrequencyAnalysis {
 				double freq = ((double) i) / fftLength * sampleRate;
                 if (freq > 800) break;
 				double mag = Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y);
+                mag = Math.Log10(mag) * 20;
 				double phase = Math.Tan(fft[i].Y / fft[i].X);
                 mags[i] = mag;
                 int bucket = 0;
                 bool showLight = false;
-				if (mag > MIN_MAGNITUDE) {
+                //if (mag < BASS_HIGH && mag > MIN_BASS_MAGNITUDE)
+                //{
+                //    MIN_BASS_MAGNITUDE = mag;
+                //}
+                //if (mag >= BASS_HIGH && mag > MIN_MAGNITUDE)
+                //{
+                //    MIN_MAGNITUDE = mag;
+                //}
+                if ((mag > MIN_MAGNITUDE)){// * 1.3 && freq >= BASS_HIGH) || (freq < BASS_HIGH && mag > MIN_BASS_MAGNITUDE * 1.3)) {
 					minFreq = Math.Max(Math.Min(minFreq, freq), 42);
 					maxFreq = Math.Max(maxFreq, freq);
                     if (freq < minFreq) freq = minFreq;
@@ -63,10 +76,10 @@ namespace SmartLightShow.FrequencyAnalysis {
                     //    currentMin = (currentMin + minFreq) / 2.0;
                     //}
                     //double cent = 1200 * (Math.Log(freq / 13.75, 2) - 0.25);
-					Console.WriteLine(freq + " " + minFreq + " " + maxFreq + " " + bucket + " mag=" + (Math.Log(mag, 10) + 5));
-                    if (peakMags[i] == 0)
+					Console.WriteLine(i + "\t" + freq + "\t" + minFreq + "\t" + maxFreq + "\t" + bucket + "\tmag=" + mag + "\t" + (MIN_BASS_MAGNITUDE * 1.3));
+                    if (peakMags[i] == -100)
                     {
-                        if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 1.0)
+                        if (mag >= (pastMag1[i] + pastMag2[i] + pastMag3[i]) * 0.7)
                         {
 					        showLight = true;
                             peakMags[i] = mag;
@@ -74,14 +87,14 @@ namespace SmartLightShow.FrequencyAnalysis {
                     }
                     else
                     {
-                        if (mag >= peakMags[i] * 0.6)
+                        if (mag >= peakMags[i] * 1.3)
                         {
                             showLight = true;
                             if (mag > peakMags[i]) peakMags[i] = mag;
                         }
                         else
                         {
-                            peakMags[i] = 0;
+                            peakMags[i] = -100;
                         }
                     }
                 }

@@ -64,13 +64,13 @@ void loop()
 //    -- -- -- -- -- -- -- --
 //    ---- -- - - - - -- ----
     for (i = 0; i < 4; i++){
-      digitalWrite(pins[i + 8], (b1 & 3) > 0 ? LOW : HIGH);
+      digitalWrite(pins[i + 8], (b1 & 1) > 0 ? LOW : HIGH);
 //      digitalWrite(pins[i + 4], (b2 & 3) > 0 ? LOW : HIGH);
 //      b1 >>= 2;
 //      b2 >>= 2;
       digitalWrite(pins[i], (b2 & 1) > 0 ? LOW : HIGH);
       digitalWrite(pins[i + 4], (b2 & 16) > 0 ? LOW : HIGH);
-      b1 >>= 2;
+      b1 >>= 1;
       b2 >>= 1;
 //      delay(50);
     }
