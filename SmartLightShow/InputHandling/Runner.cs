@@ -35,6 +35,7 @@ namespace SmartLightShow.InputHandling {
             while (true) {
                 Console.WriteLine(promptString);
                 fileName = Console.ReadLine();
+                if (fileName[fileName.Length - 1] == '/') break;
                 if (File.Exists(fileName)) break;
                 Console.WriteLine("File does not exist.");
             }

@@ -8,19 +8,18 @@ using SmartLightShow.Communication;
 
 namespace SmartLightShow.FrequencyAnalysis {
 	class FFTProcessor {
-		protected double minFreq;
-        protected double maxFreq;
+		static protected double minFreq;
+        static protected double maxFreq;
         protected long sampleRate;
         protected int numBuckets;
         protected long fftCount;
         protected double[] pastMag1, pastMag2, pastMag3;
         protected double[] peakMags;
 
-        //double MIN_MAGNITUDE = -36;
-        double MIN_MAGNITUDE = -20.5;
+        double MIN_MAGNITUDE = -40;
 
-        static readonly double BASS_HIGH = 150;
-        double MIN_BASS_MAGNITUDE = -24;
+        double BASS_HIGH = 150;
+        double MIN_BASS_MAGNITUDE = -20.5;
 
 		public FFTProcessor(int min, int max, int sampleRate, int lightStreams) {
 			minFreq = min;
@@ -32,7 +31,6 @@ namespace SmartLightShow.FrequencyAnalysis {
 		}
 
 		public virtual bool[] ProcessFFT(Complex[] fft) {
-            if (fftCount == 0) SerialToMSP430.staticInstance.startTimer();
             
 			long fftLength = fft.Length;
             Console.WriteLine("fftlength = " + fftLength);
@@ -46,7 +44,7 @@ namespace SmartLightShow.FrequencyAnalysis {
             //Console.WriteLine(string.Join(" , ", lights));
 			for (int i = 0; i < fftLength; i++) {
 				double freq = ((double) i) / fftLength * sampleRate;
-                if (freq > 800) break;
+                if (freq > 1000) break;
 				double mag = Math.Sqrt(fft[i].X * fft[i].X + fft[i].Y * fft[i].Y);
                 mag = Math.Log10(mag) * 20;
 				double phase = Math.Tan(fft[i].Y / fft[i].X);
@@ -61,7 +59,7 @@ namespace SmartLightShow.FrequencyAnalysis {
                 //{
                 //    MIN_MAGNITUDE = mag;
                 //}
-                if ((mag > MIN_MAGNITUDE)){// * 1.3 && freq >= BASS_HIGH) || (freq < BASS_HIGH && mag > MIN_BASS_MAGNITUDE * 1.3)) {
+                if ((mag > MIN_MAGNITUDE && freq >= BASS_HIGH) || (freq < BASS_HIGH && mag > MIN_BASS_MAGNITUDE)) {
 					minFreq = Math.Max(Math.Min(minFreq, freq), 42);
 					maxFreq = Math.Max(maxFreq, freq);
                     if (freq < minFreq) freq = minFreq;

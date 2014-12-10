@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
+using System.Collections;
 
 namespace SmartLightShow.Communication
 {
@@ -21,6 +22,7 @@ namespace SmartLightShow.Communication
         public string COMport = "COM4";
         public Queue<byte[]> byteQueue;
         public Queue<long> timeQueue;
+        public Hashtable map;
         public long startTime;
 
         public SerialToMSP430()
@@ -37,6 +39,7 @@ namespace SmartLightShow.Communication
             serialThread = new Thread(new ThreadStart(serialThreadLoop));
             byteQueue = new Queue<byte[]>();
             timeQueue = new Queue<long>();
+            map = new Hashtable();
             serialPort.Open();
             threadRunning = true;
             serialThread.Start();
@@ -57,8 +60,20 @@ namespace SmartLightShow.Communication
 
         public void sendBytes(byte[] b, long timestamp)
         {
-            timeQueue.Enqueue(timestamp);
-            byteQueue.Enqueue(b);
+            if (map.ContainsKey(timestamp))
+            {
+                byte[] old = (byte[])map[timestamp];
+                for (int i = 0; i < old.Length; i++)
+                {
+                    old[i] |= b[i];
+                }
+            }
+            else
+            {
+                map.Add(timestamp, b);
+                timeQueue.Enqueue(timestamp);
+                byteQueue.Enqueue(b);
+            }
         }
 
         void serialThreadLoop()

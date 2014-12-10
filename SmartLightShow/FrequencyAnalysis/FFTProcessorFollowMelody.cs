@@ -27,7 +27,6 @@ namespace SmartLightShow.FrequencyAnalysis {
         }
 
 		public override bool[] ProcessFFT(Complex[] fft) {
-            if (fftCount == 0) SerialToMSP430.staticInstance.startTimer();
 			long fftLength = fft.Length;
             fftSort = new List<double[]>();
             HashSet<int> freqs = new HashSet<int>();
