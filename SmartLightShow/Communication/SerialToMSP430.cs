@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
 using System.Collections;
+using SmartLightShow.InputHandling;
 
 namespace SmartLightShow.Communication
 {
@@ -24,6 +25,7 @@ namespace SmartLightShow.Communication
         public Queue<long> timeQueue;
         public Hashtable map;
         public long startTime;
+        public bool playing = false;
 
         public SerialToMSP430()
         {
@@ -60,19 +62,22 @@ namespace SmartLightShow.Communication
 
         public void sendBytes(byte[] b, long timestamp)
         {
-            if (map.ContainsKey(timestamp))
+            lock (this)
             {
-                byte[] old = (byte[])map[timestamp];
-                for (int i = 0; i < old.Length; i++)
+                if (map.ContainsKey(timestamp))
                 {
-                    old[i] |= b[i];
+                    byte[] old = (byte[])map[timestamp];
+                    for (int i = 0; i < old.Length; i++)
+                    {
+                        old[i] |= b[i];
+                    }
                 }
-            }
-            else
-            {
-                map.Add(timestamp, b);
-                timeQueue.Enqueue(timestamp);
-                byteQueue.Enqueue(b);
+                else
+                {
+                    map.Add(timestamp, b);
+                    timeQueue.Enqueue(timestamp);
+                    byteQueue.Enqueue(b);
+                }
             }
         }
 
@@ -86,10 +91,19 @@ namespace SmartLightShow.Communication
                     long timestamp = timeQueue.Peek();
                     if (ms >= timestamp * TimeSpan.TicksPerMillisecond)
                     {
+                        playing = true;
                         byte[] data = byteQueue.Dequeue();
                         serialPort.Write(data, 0, data.Length);
                         timeQueue.Dequeue();
                     }
+                }
+                else if (playing)
+                {
+                    playing = false;
+                    Environment.Exit(0);
+                    Console.WriteLine("wait");
+                    Runner.barrier.SignalAndWait();
+                    Console.WriteLine("done");
                 }
             }
         }

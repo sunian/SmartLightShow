@@ -19,7 +19,7 @@ namespace SmartLightShow.InputHandling {
         protected static int runNum = 0;
 
         // Must be a power of two.
-        private static int fftLength = 2048 * 1;
+        protected static int fftLength = 2048 * 1;
         
         // Variation of NAudio default sample aggregator.
         protected SampleAggregator sampleAggregator = new SampleAggregator(fftLength);
